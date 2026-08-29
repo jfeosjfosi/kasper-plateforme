@@ -431,6 +431,61 @@ tbody tr:hover .chev{transform:translateX(3px);color:var(--text-70)}
         <div id="sources-body"></div>
       </section>
 
+      <!-- COPY & RECO -->
+      <section class="page" data-page="copy">
+        <div class="eyebrow">Copy &amp; Reco · direction éditoriale</div>
+        <h1 class="h1">Copy &amp; Recommandations</h1>
+        <p class="lead">Ce que je te recommande pour fixer notre copy, tiré du scraping des 19 concurrents. Commence par trancher mes recos (👍/🤔/👎), explore l'analyse par agence, puis réponds aux questions pour verrouiller la direction.</p>
+        <div class="subtabs" id="copy-subtabs">
+          <button class="subtab active" data-sub="reco">🔥 Reco à trancher</button>
+          <button class="subtab" data-sub="agences">Analyse par agence</button>
+          <button class="subtab" data-sub="synthese">Synthèse copy</button>
+          <button class="subtab" data-sub="questions">Questions pour toi</button>
+        </div>
+
+        <div class="subpanel active" data-sub="reco">
+          <div class="tinder" id="tinder"></div>
+        </div>
+
+        <div class="subpanel" data-sub="agences">
+          <p class="muted" style="margin:-8px 0 16px;font-size:13.5px">19 agences scrapées. Score = orientation résultat/business de leur copy (vert = modèle à apprendre, rouge = beauté pure). Clique une ligne pour la fiche complète.</p>
+          <div class="toolbar"><div class="chips" id="copy-f"></div></div>
+          <div class="tablewrap"><div class="tscroll"><table>
+            <thead><tr>
+              <th class="sortable" data-c="name" data-t="copy">Agence<span class="car"></span></th>
+              <th>Verticale</th>
+              <th>Verdict copy</th>
+              <th>Prix affiché</th>
+              <th class="sortable" data-c="resultatScore" data-t="copy">Orientation résultat<span class="car">▼</span></th>
+              <th></th>
+            </tr></thead>
+            <tbody id="copy-body"></tbody>
+          </table></div></div>
+          <div class="legend">
+            <span><span class="dotm lo"></span> Vend un résultat prouvé (à apprendre)</span>
+            <span><span class="dotm mi"></span> Équilibré</span>
+            <span><span class="dotm hi"></span> Beauté / peu de preuve business</span>
+          </div>
+        </div>
+
+        <div class="subpanel" data-sub="synthese">
+          <div class="verdict" id="copy-constat" style="margin-bottom:24px"></div>
+          <h2 class="h2">Bénéfices, pas features (par pilier)</h2>
+          <div class="tablewrap" style="margin-bottom:8px"><div id="copy-piliers"></div></div>
+          <h2 class="h2">Mots à utiliser</h2>
+          <div class="wordwrap" id="copy-mots-ok"></div>
+          <h2 class="h2">Mots à bannir</h2>
+          <div class="wordwrap" id="copy-mots-ko"></div>
+          <h2 class="h2">Le ressenti à provoquer (dans l'ordre)</h2>
+          <div id="copy-ressenti"></div>
+        </div>
+
+        <div class="subpanel" data-sub="questions">
+          <p class="muted" style="margin:-8px 0 18px;font-size:13.5px">Réponds-moi à celles-ci (ici, en call, ou en chat) et on verrouille la copy. Je te les pose aussi en direct.</p>
+          <div id="copy-questions"></div>
+        </div>
+      </section>
+
     </div>
   </main>
 </div>
