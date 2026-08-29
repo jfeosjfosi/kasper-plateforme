@@ -9,6 +9,10 @@ __pycache__/
 .wrangler/
 .dev.vars
 
+# Fichier de passation contenant la clé privée (à envoyer en direct, JAMAIS pushé)
+ACCES-KASPER-OS.md
+kasper_os_deploy*
+
 # OS
 .DS_Store
 Thumbs.db
