@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kasper Studio — Plateforme de décision</title>
+<style>
+:root{
+  --bg:#070707; --bg-1:#0c0c0d; --bg-2:#101012; --bg-3:#151518;
+  --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.05); --line-3:rgba(255,255,255,.16);
+  --text:#fff; --text-70:rgba(255,255,255,.72); --text-45:rgba(255,255,255,.47); --text-28:rgba(255,255,255,.30);
+  --good:#63c496; --good-bg:rgba(99,196,150,.10); --good-line:rgba(99,196,150,.30);
+  --mid:#d6ab5c; --mid-bg:rgba(214,171,92,.10); --mid-line:rgba(214,171,92,.30);
+  --low:#d3746b; --low-bg:rgba(211,116,107,.10); --low-line:rgba(211,116,107,.32);
+  --accent:#8a7cff;
+  --radius:16px; --radius-sm:12px; --pillr:999px;
+  --sans:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+::selection{background:rgba(138,124,255,.35)}
+h1,h2,h3,h4{font-weight:500;letter-spacing:-.02em;margin:0}
+.num{font-variant-numeric:tabular-nums}
+
+/* layout */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:256px;flex:0 0 256px;border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow-y:auto;background:linear-gradient(180deg,var(--bg-1),var(--bg));padding:22px 14px}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 10px 18px}
+.brand .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(140deg,#fff,#8a7cff);display:grid;place-items:center;color:#0a0a0a;font-weight:700;font-size:14px}
+.brand b{font-weight:600;letter-spacing:-.02em}
+.brand span{display:block;font-size:11px;color:var(--text-45);letter-spacing:.02em}
+.navsec{margin:14px 0 6px;padding:0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-28)}
+.navitem{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:10px;color:var(--text-70);cursor:pointer;font-size:13.5px;user-select:none;transition:background .16s,color .16s}
+.navitem:hover{background:var(--bg-3);color:var(--text)}
+.navitem.active{background:var(--bg-3);color:var(--text)}
+.navitem .ic{width:16px;text-align:center;opacity:.7;font-size:13px}
+.navitem.active .ic{opacity:1}
+
+.main{flex:1;min-width:0}
+.pagewrap{max-width:1040px;margin:0 auto;padding:56px 40px 90px}
+.page{display:none}
+.page.active{display:block;animation:fade .4s cubic-bezier(.16,1,.3,1)}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.eyebrow{font-size:11.5px;text-transform:uppercase;letter-spacing:.16em;color:var(--text-45);margin-bottom:14px}
+.h1{font-size:34px;line-height:1.12;margin-bottom:12px}
+.lead{font-size:16.5px;color:var(--text-70);max-width:66ch;margin-bottom:30px}
+.h2{font-size:20px;margin:38px 0 14px}
+.muted{color:var(--text-45)}
+
+/* cards & grids */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+.card{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.card.link{cursor:pointer;transition:transform .16s,border-color .16s}
+.card.link:hover{transform:translateY(-2px);border-color:var(--line-3)}
+.card .top{position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);opacity:.6}
+.kpi{position:relative;overflow:hidden}
+.kpi .k{font-size:30px;font-weight:600;letter-spacing:-.03em}
+.kpi .l{font-size:13px;color:var(--text-70);margin-top:2px}
+.kpi .s{font-size:11.5px;color:var(--text-45);margin-top:6px}
+.card h3{font-size:16px;margin-bottom:6px}
+.card .desc{font-size:13.5px;color:var(--text-70)}
+.card .go{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-45);margin-top:12px}
+.card.link:hover .go{color:var(--text)}
+.card.link:hover .go .arw{transform:translateX(2px)}
+.arw{transition:transform .16s}
+
+.verdict{border:1px solid var(--good-line);background:var(--good-bg);border-radius:var(--radius);padding:20px 22px;margin-bottom:26px}
+.verdict h3{font-size:17px;margin-bottom:8px}
+.verdict p{color:var(--text-70);font-size:14px;margin:6px 0}
+.verdict .reco{color:var(--good);font-size:13.5px;margin-top:10px;font-weight:500}
+
+/* pills / badges */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:var(--pillr);font-size:11.5px;border:1px solid var(--line);color:var(--text-70);background:var(--bg-3)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:var(--pillr);font-size:11px;font-weight:500;white-space:nowrap}
+.b-hi{color:var(--low);background:var(--low-bg);border:1px solid var(--low-line)}
+.b-mi{color:var(--mid);background:var(--mid-bg);border:1px solid var(--mid-line)}
+.b-lo{color:var(--good);background:var(--good-bg);border:1px solid var(--good-line)}
+.b-na{color:var(--text-45);background:var(--bg-3);border:1px solid var(--line)}
+.dotm{width:7px;height:7px;border-radius:50%}
+.dotm.hi{background:var(--low)}.dotm.mi{background:var(--mid)}.dotm.lo{background:var(--good)}.dotm.na{background:var(--text-28)}
+
+/* filter bar */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.chips{display:inline-flex;gap:6px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:var(--pillr);border:1px solid var(--line);background:var(--bg-2);color:var(--text-70);font-size:12.5px;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--line-3);color:var(--text)}
+.chip[aria-pressed="true"]{background:#fff;color:#0a0a0a;border-color:#fff}
+.search{margin-left:auto;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--pillr);padding:8px 14px;color:var(--text);font-size:13px;min-width:200px}
+.search:focus{outline:none;border-color:var(--line-3)}
+
+/* table */
+.tablewrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--bg-1)}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th{ text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-45);font-weight:500;padding:13px 16px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--bg-2)}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--text)}
+th .car{opacity:.4;font-size:10px;margin-left:3px}
+td{padding:13px 16px;border-bottom:1px solid var(--line-2);font-size:13.5px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{cursor:pointer;transition:background .13s}
+tbody tr:hover{background:var(--bg-3)}
+.tname{font-weight:500;font-size:14px;display:flex;align-items:center;gap:8px}
+.chev{color:var(--text-28);transition:transform .15s}
+tbody tr:hover .chev{transform:translateX(3px);color:var(--text-70)}
+.bar{height:5px;border-radius:3px;background:var(--bg-3);overflow:hidden;width:66px;margin-top:5px}
+.bar > i{display:block;height:100%;border-radius:3px}
+.i-hi{background:var(--low)}.i-mi{background:var(--mid)}.i-lo{background:var(--good)}
+
+/* legend */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--text-45)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* drawer */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s;z-index:40}
+.ov.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:min(460px,94vw);background:linear-gradient(180deg,var(--bg-2),var(--bg-1));border-left:1px solid var(--line-3);transform:translateX(102%);transition:transform .32s cubic-bezier(.16,1,.3,1);z-index:41;overflow-y:auto;padding:26px 26px 60px}
+.drawer.open{transform:none}
+.drawer .x{position:absolute;top:18px;right:18px;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--bg-3);color:var(--text-70);cursor:pointer;font-size:15px}
+.drawer .x:hover{color:var(--text);border-color:var(--line-3)}
+.dk-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 40px 14px 0}
+.dk-title{font-size:22px;margin-bottom:4px}
+.quote{border-left:2px solid var(--line-3);padding:6px 0 6px 14px;color:var(--text-70);font-style:italic;font-size:14px;margin:14px 0}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:16px 0}
+.facts .f{background:var(--bg-1);padding:11px 13px}
+.facts .f .fl{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-45)}
+.facts .f .fv{font-size:13px;margin-top:3px}
+.dsec{margin-top:18px}
+.dsec h4{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-45);margin-bottom:9px}
+.ulist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.ulist li{position:relative;padding-left:18px;font-size:13.5px;color:var(--text-70)}
+.ulist li::before{content:"";position:absolute;left:2px;top:8px;width:6px;height:6px;border-radius:50%}
+.ulist.pos li::before{background:var(--good)}
+.ulist.neg li::before{background:var(--low)}
+.callout{border:1px solid var(--good-line);background:var(--good-bg);border-radius:12px;padding:13px 15px;margin-top:16px}
+.callout .cl{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--good);margin-bottom:5px}
+.callout p{margin:0;font-size:13.5px;color:var(--text)}
+.note{border:1px solid var(--mid-line);background:var(--mid-bg);border-radius:12px;padding:11px 14px;margin-top:14px;font-size:12.5px;color:var(--text-70)}
+.dlink{display:inline-flex;align-items:center;gap:6px;margin-top:18px;font-size:13px;color:var(--accent)}
+.dlink:hover{text-decoration:underline}
+
+/* piliers, list rows, timeline */
+.pilier{display:flex;flex-direction:column;gap:6px}
+.pilier .pt{font-size:11px;color:var(--text-45)}
+.filrouge{display:flex;align-items:center;gap:12px;margin:8px 0 20px;flex-wrap:wrap}
+.frstep{padding:9px 18px;border:1px solid var(--line-3);border-radius:var(--pillr);font-size:14px;background:var(--bg-2)}
+.frarrow{color:var(--text-28)}
+.qa{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:var(--bg-1)}
+.qa .q{font-weight:500;font-size:14px;margin-bottom:4px}
+.qa .a{font-size:13px;color:var(--text-70)}
+.tl{list-style:none;padding:0;margin:0}
+.tl li{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line-2)}
+.tl li:last-child{border:none}
+.tl .pr{flex:0 0 auto;align-self:flex-start}
+.tl .tlc .tt{font-size:14.5px;font-weight:500}
+.tl .tlc .tn{font-size:12.5px;color:var(--text-45);margin-top:3px}
+.pr-p1{color:var(--low);background:var(--low-bg);border:1px solid var(--low-line)}
+.pr-p2{color:var(--mid);background:var(--mid-bg);border:1px solid var(--mid-line)}
+.pr-p3{color:var(--text-45);background:var(--bg-3);border:1px solid var(--line)}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tier{border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:linear-gradient(180deg,var(--bg-2),var(--bg-1));position:relative}
+.tier.hot{border-color:var(--good-line);box-shadow:0 0 0 1px var(--good-line)}
+.tier .role{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-45)}
+.tier h3{font-size:18px;margin:6px 0 2px}
+.tier .price{font-size:14px;color:var(--good);margin-bottom:12px}
+.tier ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+.tier li{font-size:12.5px;color:var(--text-70);padding-left:16px;position:relative}
+.tier li::before{content:"✓";position:absolute;left:0;color:var(--good);font-size:11px}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;background:var(--bg-3);border:1px solid var(--line);font-size:11px;color:var(--text-70)}
+.chipline{display:flex;flex-wrap:wrap;gap:8px}
+.vbatim{border:1px solid var(--line);border-radius:10px;padding:10px 13px;font-size:13px;color:var(--text-70);font-style:italic;background:var(--bg-1)}
+.srow{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line-2);font-size:13.5px}
+.srow:last-child{border:none}
+.srow a{color:var(--accent);font-size:12.5px}
+.sys{display:flex;gap:12px;align-items:flex-start}
+.sys .si{flex:0 0 34px;height:34px;border-radius:9px;background:var(--bg-3);border:1px solid var(--line);display:grid;place-items:center;font-size:15px}
+.sys .st{font-size:14px;font-weight:500}
+.sys .sd{font-size:12.5px;color:var(--text-70);margin-top:2px}
+.freq{font-size:10.5px;color:var(--accent);margin-top:5px;text-transform:uppercase;letter-spacing:.08em}
+
+@media (max-width:980px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .tiers{grid-template-columns:1fr}
+}
+@media (max-width:860px){
+  .shell{flex-direction:column}
+  .sidebar{position:sticky;top:0;width:100%;height:auto;flex:none;display:flex;gap:6px;overflow-x:auto;padding:12px;border-right:none;border-bottom:1px solid var(--line);z-index:30}
+  .brand,.navsec{display:none}
+  .navitem{white-space:nowrap}
+  .pagewrap{padding:34px 20px 80px}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .h1{font-size:27px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="sidebar" aria-label="Navigation">
+    <div class="brand"><div class="dot">K</div><div><b>Kasper Studio</b><span>Plateforme de décision</span></div></div>
+
+    <div class="navsec">Vue d'ensemble</div>
+    <div class="navitem" data-page="accueil"><span class="ic">◆</span> Résumé</div>
+
+    <div class="navsec">Stratégie</div>
+    <div class="navitem" data-page="positionnement"><span class="ic">◎</span> Positionnement</div>
+    <div class="navitem" data-page="marche"><span class="ic">▤</span> Marché &amp; tendances</div>
+    <div class="navitem" data-page="concurrents"><span class="ic">⚔</span> Concurrents</div>
+    <div class="navitem" data-page="opportunites"><span class="ic">◈</span> Opportunités</div>
+    <div class="navitem" data-page="icp"><span class="ic">◐</span> ICP &amp; psycho</div>
+    <div class="navitem" data-page="angles"><span class="ic">➤</span> Angles</div>
+
+    <div class="navsec">Passer à l'action</div>
+    <div class="navitem" data-page="offres"><span class="ic">▦</span> Offres</div>
+    <div class="navitem" data-page="kasperos"><span class="ic">✦</span> Kasper OS / IA</div>
+    <div class="navitem" data-page="equipe"><span class="ic">◑</span> Équipe &amp; territoire</div>
+    <div class="navitem" data-page="roadmap"><span class="ic">➜</span> Roadmap</div>
+
+    <div class="navsec">Références</div>
+    <div class="navitem" data-page="sources"><span class="ic">⌘</span> Sources</div>
+  </nav>
+
+  <main class="main">
+    <div class="pagewrap">
+
+      <!-- ACCUEIL -->
+      <section class="page" data-page="accueil">
+        <div class="eyebrow">Kasper Studio · Refonte 2026 · data-room interne</div>
+        <h1 class="h1">Tout ce qu'il faut pour décider la refonte.</h1>
+        <p class="lead">Stratégie, marché, 19 concurrents scorés, ICP, opportunités, offres et systèmes IA — centralisés. Cliquez une ligne pour ouvrir le détail. Données publiques datées du 29/08/2026.</p>
+        <div class="kpis" id="kpis"></div>
+        <div id="verdict"></div>
+        <h2 class="h2">Explorer</h2>
+        <div class="grid3" id="navcards"></div>
+      </section>
+
+      <!-- POSITIONNEMENT -->
+      <section class="page" data-page="positionnement">
+        <div class="eyebrow">Stratégie</div>
+        <h1 class="h1" id="pos-phrase"></h1>
+        <p class="lead" id="pos-sous"></p>
+        <div class="filrouge" id="pos-filrouge"></div>
+        <p class="muted" id="pos-frnote" style="margin-top:-8px;font-size:13.5px"></p>
+        <div class="callout" id="pos-preuve" style="margin:22px 0"></div>
+        <h2 class="h2">Les 4 piliers (leviers d'une même promesse)</h2>
+        <div class="grid2" id="pos-piliers"></div>
+        <div class="note" id="pos-aware" style="margin-top:22px"></div>
+      </section>
+
+      <!-- MARCHE -->
+      <section class="page" data-page="marche">
+        <div class="eyebrow">Stratégie · question : où se situe le marché, et où il va ?</div>
+        <h1 class="h1">Marché &amp; tendances 2026</h1>
+        <p class="lead">Fourchettes de prix réelles (FR + international) et les 5 bascules de fond qui conditionnent notre positionnement.</p>
+        <h2 class="h2">Fourchettes de prix</h2>
+        <div class="tablewrap"><div class="tscroll"><table>
+          <thead><tr><th>Prestation</th><th>Médiane / repère</th><th>Fourchette</th><th>Source</th></tr></thead>
+          <tbody id="marche-body"></tbody>
+        </table></div></div>
+        <h2 class="h2">Tendances de fond</h2>
+        <div class="grid2" id="marche-tendances"></div>
+      </section>
+
+      <!-- CONCURRENTS -->
+      <section class="page" data-page="concurrents">
+        <div class="eyebrow">Stratégie · question : qui est une menace, et comment on gagne ?</div>
+        <h1 class="h1">Concurrents</h1>
+        <p class="lead">19 acteurs, 4 verticales. Menace = risque pour une agence multi-services FR. Triez, filtrez, cliquez une ligne pour la fiche complète (forces, faiblesses, notre angle).</p>
+        <div class="toolbar">
+          <div class="chips" id="f-vertical"></div>
+          <input class="search" id="c-search" type="search" placeholder="Rechercher un concurrent…" aria-label="Rechercher">
+        </div>
+        <div class="toolbar" style="margin-top:-6px"><div class="chips" id="f-menace"></div></div>
+        <div class="tablewrap"><div class="tscroll"><table>
+          <thead><tr>
+            <th class="sortable" data-c="name">Nom<span class="car"></span></th>
+            <th class="sortable" data-c="vertical">Verticale<span class="car"></span></th>
+            <th>Pays</th>
+            <th>Pricing</th>
+            <th class="sortable" data-c="menaceScore">Menace<span class="car">▼</span></th>
+            <th></th>
+          </tr></thead>
+          <tbody id="conc-body"></tbody>
+        </table></div></div>
+        <div class="legend">
+          <span><span class="dotm hi"></span> Menace haute (risque)</span>
+          <span><span class="dotm mi"></span> Menace moyenne</span>
+          <span><span class="dotm lo"></span> Menace faible (avantage)</span>
+          <span><span class="dotm na"></span> Non concurrent</span>
+        </div>
+      </section>
+
+      <!-- OPPORTUNITES -->
+      <section class="page" data-page="opportunites">
+        <div class="eyebrow">Stratégie · question : où viser en priorité ?</div>
+        <h1 class="h1">Opportunités &amp; white spaces</h1>
+        <p class="lead">Ce qu'aucun (ou presque) des 19 concurrents ne couvre. Score = potentiel d'opportunité (0–10). Cliquez pour le détail et ce que ça exige.</p>
+        <div class="tablewrap"><div class="tscroll"><table>
+          <thead><tr><th>Opportunité</th><th>Résumé</th><th>Potentiel</th><th></th></tr></thead>
+          <tbody id="opp-body"></tbody>
+        </table></div></div>
+        <div class="legend"><span><span class="dotm lo"></span> Vert = fort potentiel d'opportunité</span></div>
+      </section>
+
+      <!-- ICP -->
+      <section class="page" data-page="icp">
+        <div class="eyebrow">Stratégie · à qui on parle, et comment</div>
+        <h1 class="h1">ICP &amp; psychographie</h1>
+        <p class="lead">Deux profils cibles, leurs objections réelles et leur langue (verbatims pour la copy).</p>
+        <div class="grid2" id="icp-personas"></div>
+        <h2 class="h2">Carte des objections → réponse</h2>
+        <div id="icp-obj"></div>
+        <h2 class="h2">Verbatims (langue du marché)</h2>
+        <div class="grid2" id="icp-verb"></div>
+      </section>
+
+      <!-- ANGLES -->
+      <section class="page" data-page="angles">
+        <div class="eyebrow">Stratégie · les accroches qui mordent</div>
+        <h1 class="h1">Angles prioritaires</h1>
+        <p class="lead">5 angles calibrés sur un marché sceptique : douleur nommée + preuve, jamais la promesse générique.</p>
+        <div class="tablewrap"><div class="tscroll"><table>
+          <thead><tr><th>Angle</th><th>Type</th><th>Cible</th><th>Accroche</th><th>Prio</th></tr></thead>
+          <tbody id="angles-body"></tbody>
+        </table></div></div>
+      </section>
+
+      <!-- OFFRES -->
+      <section class="page" data-page="offres">
+        <div class="eyebrow">Passer à l'action · le modèle commercial</div>
+        <h1 class="h1">Offres</h1>
+        <p class="lead">Porte d'entrée → cœur → récurrent, plus les produits d'appel design et le pilier media buying. Afficher des fourchettes = différenciation (17/19 concurrents sont opaques).</p>
+        <div class="tiers" id="offres-body"></div>
+      </section>
+
+      <!-- KASPER OS -->
+      <section class="page" data-page="kasperos">
+        <div class="eyebrow">Passer à l'action · le différenciateur n°1</div>
+        <h1 class="h1">Kasper OS — systèmes automatiques (agents Hermes)</h1>
+        <p class="lead" id="kos-intro"></p>
+        <div class="grid2" id="kos-volets"></div>
+        <h2 class="h2">Les systèmes déployés</h2>
+        <div class="grid2" id="kos-systemes"></div>
+        <div class="callout" id="kos-closing" style="margin-top:22px"></div>
+      </section>
+
+      <!-- EQUIPE -->
+      <section class="page" data-page="equipe">
+        <div class="eyebrow">Passer à l'action · qui fait quoi</div>
+        <h1 class="h1">Équipe &amp; territoire</h1>
+        <div class="note" id="eq-vision" style="margin-bottom:22px"></div>
+        <div class="grid2" id="eq-membres"></div>
+      </section>
+
+      <!-- ROADMAP -->
+      <section class="page" data-page="roadmap">
+        <div class="eyebrow">Passer à l'action · dans quel ordre</div>
+        <h1 class="h1">Roadmap — prochaines actions</h1>
+        <p class="lead">Priorisées. L'action n°1 (métriques CYKL) débloque toute la preuve du positionnement.</p>
+        <ul class="tl" id="roadmap-body"></ul>
+      </section>
+
+      <!-- SOURCES -->
+      <section class="page" data-page="sources">
+        <div class="eyebrow">Références</div>
+        <h1 class="h1">Sources</h1>
+        <p class="lead">Recherche publique, datée du 29/08/2026. Les hypothèses sont distinguées des faits dans les fiches.</p>
+        <div id="sources-body"></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div class="ov" id="ov"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Détail">
+  <button class="x" id="drawer-x" aria-label="Fermer">✕</button>
+  <div id="drawer-content"></div>
+</aside>
+
+<script src="concurrents-data.js"></script>
+<script src="kasper-data.js"></script>
+<script>
+"use strict";
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function menaceCls(sc){return sc>=7?"hi":sc>=5?"mi":sc>=1?"lo":"na";}
+function menaceBadge(m,sc){var c=menaceCls(sc);return '<span class="badge b-'+c+'"><span class="dotm '+c+'"></span>'+esc(m)+'</span>';}
+
+/* ---------- routing ---------- */
+function go(p){
+  var pages=document.querySelectorAll(".page");
+  var target=document.querySelector('.page[data-page="'+p+'"]');
+  if(!target){p="accueil";target=document.querySelector('.page[data-page="accueil"]');}
+  pages.forEach(function(el){el.classList.remove("active");});
+  target.classList.add("active");
+  document.querySelectorAll(".navitem").forEach(function(n){n.classList.toggle("active",n.dataset.page===p);});
+  if(location.hash.slice(1)!==p){try{history.replaceState(null,"","#"+p);}catch(e){location.hash=p;}}
+  window.scrollTo({top:0,behavior:"instant"in window?"instant":"auto"});
+}
+document.querySelectorAll(".navitem").forEach(function(n){n.addEventListener("click",function(){go(n.dataset.page);});});
+window.addEventListener("hashchange",function(){go(location.hash.slice(1)||"accueil");});
+document.addEventListener("click",function(e){var g=e.target.closest("[data-goto]");if(g){go(g.dataset.goto);}});
+
+/* ---------- drawer ---------- */
+var ov=document.getElementById("ov"),drawer=document.getElementById("drawer"),dc=document.getElementById("drawer-content");
+function openDrawer(html){dc.innerHTML=html;ov.classList.add("open");drawer.classList.add("open");document.body.style.overflow="hidden";}
+function closeDrawer(){ov.classList.remove("open");drawer.classList.remove("open");document.body.style.overflow="";}
+ov.addEventListener("click",closeDrawer);
+document.getElementById("drawer-x").addEventListener("click",closeDrawer);
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeDrawer();});
+
+function concDrawer(c){
+  var forces=(c.forces||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join("");
+  var faibl=(c.faiblesses||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join("");
+  var h='';
+  h+='<div class="dk-head">'+menaceBadge(c.menace,c.menaceScore)+'<span class="pill">'+esc(c.vertical)+'</span><span class="pill">'+esc(c.type)+'</span></div>';
+  h+='<div class="dk-title">'+esc(c.name)+'</div>';
+  if(c.hero) h+='<div class="quote">'+esc(c.hero)+'</div>';
+  h+='<p style="color:var(--text-70);font-size:14px">'+esc(c.resume)+'</p>';
+  h+='<div class="facts">'
+    +'<div class="f"><div class="fl">Verticale</div><div class="fv">'+esc(c.vertical)+'</div></div>'
+    +'<div class="f"><div class="fl">Pays</div><div class="fv">'+esc(c.pays)+'</div></div>'
+    +'<div class="f"><div class="fl">Pricing</div><div class="fv">'+esc(c.pricing)+'</div></div>'
+    +'<div class="f"><div class="fl">Menace</div><div class="fv">'+esc(c.menace)+'</div></div>'
+    +'</div>';
+  if(forces) h+='<div class="dsec"><h4>Forces</h4><ul class="ulist pos">'+forces+'</ul></div>';
+  if(faibl) h+='<div class="dsec"><h4>Faiblesses / angles morts</h4><ul class="ulist neg">'+faibl+'</ul></div>';
+  if(c.angle) h+='<div class="callout"><div class="cl">Notre angle pour gagner</div><p>'+esc(c.angle)+'</p></div>';
+  if(c.note) h+='<div class="note">⚠︎ '+esc(c.note)+'</div>';
+  if(c.source) h+='<a class="dlink" href="'+esc(c.source)+'" target="_blank" rel="noopener">Voir la source · '+esc(c.date)+' ↗</a>';
+  openDrawer(h);
+}
+function oppDrawer(o){
+  var h='';
+  h+='<div class="dk-head"><span class="badge b-lo"><span class="dotm lo"></span>Potentiel '+o.score+'/10</span></div>';
+  h+='<div class="dk-title">'+esc(o.nom)+'</div>';
+  h+='<p style="color:var(--text-70);font-size:14px">'+esc(o.resume)+'</p>';
+  if(o.detail) h+='<div class="dsec"><h4>Détail</h4><p style="color:var(--text-70);font-size:13.5px;margin:0">'+esc(o.detail)+'</p></div>';
+  if(o.exige) h+='<div class="callout"><div class="cl">Ce que ça exige</div><p>'+esc(o.exige)+'</p></div>';
+  openDrawer(h);
+}
+
+/* ---------- render: accueil ---------- */
+(function(){
+  document.getElementById("kpis").innerHTML=(window.KPIS||[]).map(function(k){
+    return '<div class="card kpi"><div class="top"></div><div class="k num">'+esc(k.k)+'</div><div class="l">'+esc(k.l)+'</div><div class="s">'+esc(k.s)+'</div></div>';
+  }).join("");
+  var v=window.VERDICT||{};
+  document.getElementById("verdict").innerHTML='<div class="verdict"><h3>'+esc(v.titre)+'</h3><p>'+esc(v.texte)+'</p><div class="reco">→ '+esc(v.reco)+'</div></div>';
+  var cards=[
+    {p:"concurrents",t:"Concurrents",d:"19 acteurs scorés, filtrables. Qui est une menace, comment on gagne."},
+    {p:"opportunites",t:"Opportunités",d:"Les white spaces — dont le media buying, couvert par 0 concurrent."},
+    {p:"positionnement",t:"Positionnement",d:"Le fil rouge, les 4 piliers, la preuve CYKL."},
+    {p:"offres",t:"Offres",d:"Audit → Mission → Kasper OS + sprints + media buying."},
+    {p:"kasperos",t:"Kasper OS / IA",d:"Les systèmes automatiques (agents Hermes) déployés chez le client."},
+    {p:"roadmap",t:"Roadmap",d:"Les prochaines actions priorisées."}
+  ];
+  document.getElementById("navcards").innerHTML=cards.map(function(c){
+    return '<div class="card link" data-goto="'+c.p+'"><h3>'+esc(c.t)+'</h3><div class="desc">'+esc(c.d)+'</div><div class="go">Ouvrir <span class="arw">→</span></div></div>';
+  }).join("");
+})();
+
+/* ---------- render: positionnement ---------- */
+(function(){
+  var P=window.POSITIONNEMENT||{};
+  document.getElementById("pos-phrase").textContent=P.phrase||"";
+  document.getElementById("pos-sous").textContent=P.sous||"";
+  document.getElementById("pos-filrouge").innerHTML=(P.filRouge||[]).map(function(s,i){
+    return (i?'<span class="frarrow">→</span>':'')+'<span class="frstep">'+esc(s)+'</span>';
+  }).join("");
+  document.getElementById("pos-frnote").textContent=P.filRougeNote||"";
+  document.getElementById("pos-preuve").innerHTML='<div class="cl">Preuve d\'ancrage</div><p>'+esc(P.preuve)+'</p>';
+  document.getElementById("pos-piliers").innerHTML=(P.piliers||[]).map(function(p){
+    return '<div class="card pilier"><span class="tag">'+esc(p.tag)+'</span><h3>'+esc(p.nom)+'</h3><div class="desc">'+esc(p.desc)+'</div></div>';
+  }).join("");
+  document.getElementById("pos-aware").innerHTML='<b>Niveau de conscience —</b> '+esc(P.awareness);
+})();
+
+/* ---------- render: marché ---------- */
+(function(){
+  var M=window.MARCHE||{};
+  document.getElementById("marche-body").innerHTML=(M.pricing||[]).map(function(r){
+    return '<tr><td style="font-weight:500">'+esc(r.presta)+'</td><td>'+esc(r.mediane)+'</td><td class="muted">'+esc(r.fourchette)+'</td><td class="muted">'+esc(r.src)+'</td></tr>';
+  }).join("");
+  document.getElementById("marche-tendances").innerHTML=(M.tendances||[]).map(function(t){
+    var tag=t.type==="fait"?'<span class="badge b-lo">fait</span>':'<span class="badge b-mi">hypothèse</span>';
+    return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><h3 style="font-size:15px">'+esc(t.t)+'</h3>'+tag+'</div><div class="desc">'+esc(t.d)+'</div><div class="go" style="color:var(--text-45)">'+esc(t.src)+'</div></div>';
+  }).join("");
+})();
+
+/* ---------- render: concurrents (tri + filtres) ---------- */
+var cState={c:"menaceScore",asc:false,vertical:"Tous",menace:"Toutes",q:""};
+function buildChips(id,items,key){
+  document.getElementById(id).innerHTML=items.map(function(it){
+    return '<button class="chip" data-k="'+key+'" data-v="'+esc(it)+'" aria-pressed="'+((cState[key]===it)?"true":"false")+'">'+esc(it)+'</button>';
+  }).join("");
+}
+function renderConc(){
+  var rows=(window.CONCURRENTS||[]).slice();
+  if(cState.vertical!=="Tous") rows=rows.filter(function(r){return r.vertical===cState.vertical;});
+  if(cState.menace!=="Toutes"){
+    rows=rows.filter(function(r){var c=menaceCls(r.menaceScore);return (cState.menace==="Haute"&&c==="hi")||(cState.menace==="Moyenne"&&c==="mi")||(cState.menace==="Faible"&&(c==="lo"||c==="na"));});
+  }
+  if(cState.q){var q=cState.q.toLowerCase();rows=rows.filter(function(r){return (r.name+" "+r.vertical+" "+r.pays+" "+r.type).toLowerCase().indexOf(q)>-1;});}
+  rows.sort(function(a,b){
+    var A=a[cState.c],B=b[cState.c];
+    if(typeof A==="string"){A=A.toLowerCase();B=B.toLowerCase();}
+    if(A<B)return cState.asc?-1:1;if(A>B)return cState.asc?1:-1;return 0;
+  });
+  document.getElementById("conc-body").innerHTML=rows.map(function(r){
+    var c=menaceCls(r.menaceScore);
+    return '<tr data-id="'+esc(r.id)+'" role="button" tabindex="0">'
+      +'<td><div class="tname">'+esc(r.name)+'</div></td>'
+      +'<td class="muted">'+esc(r.vertical)+'</td>'
+      +'<td class="muted">'+esc(r.pays)+'</td>'
+      +'<td class="muted">'+esc(r.pricing)+'</td>'
+      +'<td>'+menaceBadge(r.menace,r.menaceScore)+'<div class="bar"><i class="i-'+c+'" style="width:'+(r.menaceScore*10)+'%"></i></div></td>'
+      +'<td><span class="chev">→</span></td></tr>';
+  }).join("")|| '<tr><td colspan="6" class="muted" style="padding:24px">Aucun résultat.</td></tr>';
+  document.querySelectorAll("#conc-body tr[data-id]").forEach(function(tr){
+    var c=(window.CONCURRENTS||[]).find(function(x){return x.id===tr.dataset.id;});
+    tr.addEventListener("click",function(){concDrawer(c);});
+    tr.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();concDrawer(c);}});
+  });
+  document.querySelectorAll("#concurrents th.sortable").forEach(function(th){
+    th.querySelector(".car").textContent=(th.dataset.c===cState.c)?(cState.asc?"▲":"▼"):"";
+  });
+}
+(function(){
+  buildChips("f-vertical",["Tous","Design","Créa","Shopify","Code"],"vertical");
+  buildChips("f-menace",["Toutes","Haute","Moyenne","Faible"],"menace");
+  document.querySelectorAll(".chip").forEach(function(ch){
+    ch.addEventListener("click",function(){
+      var k=ch.dataset.k;cState[k]=ch.dataset.v;
+      document.querySelectorAll('.chip[data-k="'+k+'"]').forEach(function(o){o.setAttribute("aria-pressed",o===ch?"true":"false");});
+      renderConc();
+    });
+  });
+  document.getElementById("c-search").addEventListener("input",function(e){cState.q=e.target.value;renderConc();});
+  document.querySelectorAll("#concurrents th.sortable").forEach(function(th){
+    th.addEventListener("click",function(){
+      var c=th.dataset.c;
+      if(cState.c===c)cState.asc=!cState.asc;else{cState.c=c;cState.asc=(c!=="menaceScore");}
+      renderConc();
+    });
+  });
+  renderConc();
+})();
+
+/* ---------- render: opportunités ---------- */
+(function(){
+  document.getElementById("opp-body").innerHTML=(window.OPPORTUNITES||[]).map(function(o){
+    return '<tr data-id="'+esc(o.id)+'" role="button" tabindex="0">'
+      +'<td style="font-weight:500;min-width:180px">'+esc(o.nom)+'</td>'
+      +'<td class="muted" style="max-width:420px">'+esc(o.resume)+'</td>'
+      +'<td><span class="badge b-lo"><span class="dotm lo"></span>'+o.score+'/10</span><div class="bar"><i class="i-lo" style="width:'+(o.score*10)+'%"></i></div></td>'
+      +'<td><span class="chev">→</span></td></tr>';
+  }).join("");
+  document.querySelectorAll("#opp-body tr[data-id]").forEach(function(tr){
+    var o=(window.OPPORTUNITES||[]).find(function(x){return x.id===tr.dataset.id;});
+    tr.addEventListener("click",function(){oppDrawer(o);});
+    tr.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();oppDrawer(o);}});
+  });
+})();
+
+/* ---------- render: ICP ---------- */
+(function(){
+  var I=window.ICP||{};
+  document.getElementById("icp-personas").innerHTML=(I.personas||[]).map(function(p){
+    return '<div class="card"><span class="tag">'+esc(p.tag)+'</span><h3 style="margin-top:8px">'+esc(p.nom)+'</h3><div class="desc" style="margin-top:4px">'+esc(p.desc)+'</div>'
+      +'<div class="note" style="margin-top:12px">'+esc(p.pilote)+'</div>'
+      +'<div class="quote" style="margin-bottom:0">'+esc(p.accroche)+'</div></div>';
+  }).join("");
+  document.getElementById("icp-obj").innerHTML=(I.objections||[]).map(function(o){
+    return '<div class="qa"><div class="q">'+esc(o.o)+'</div><div class="a">→ '+esc(o.r)+'</div></div>';
+  }).join("");
+  document.getElementById("icp-verb").innerHTML=(I.verbatims||[]).map(function(v){
+    return '<div class="vbatim">« '+esc(v)+' »</div>';
+  }).join("");
+})();
+
+/* ---------- render: angles ---------- */
+(function(){
+  document.getElementById("angles-body").innerHTML=(window.ANGLES||[]).map(function(a){
+    return '<tr><td style="font-weight:500;min-width:160px">'+esc(a.nom)+'</td><td><span class="pill">'+esc(a.type)+'</span></td><td class="muted">'+esc(a.cible)+'</td><td style="font-style:italic;color:var(--text-70);min-width:220px">« '+esc(a.hook)+' »</td><td><span class="badge b-hi">'+esc(a.prio)+'</span></td></tr>';
+  }).join("");
+})();
+
+/* ---------- render: offres ---------- */
+(function(){
+  document.getElementById("offres-body").innerHTML=(window.OFFRES||[]).map(function(o){
+    var li=(o.points||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join("");
+    return '<div class="tier'+(o.hot?" hot":"")+'"><div class="role">'+esc(o.role)+'</div><h3>'+esc(o.nom)+'</h3><div class="price">'+esc(o.prix)+'</div><ul>'+li+'</ul></div>';
+  }).join("");
+})();
+
+/* ---------- render: Kasper OS ---------- */
+(function(){
+  var K=window.KASPEROS||{};
+  document.getElementById("kos-intro").textContent=K.intro||"";
+  document.getElementById("kos-volets").innerHTML=(K.volets||[]).map(function(v){
+    return '<div class="card"><h3 style="font-size:15px">'+esc(v.nom)+'</h3><div class="desc" style="margin-top:5px">'+esc(v.desc)+'</div></div>';
+  }).join("");
+  var icons=["◎","▤","!","✎","▦","∞"];
+  document.getElementById("kos-systemes").innerHTML=(K.systemes||[]).map(function(s,i){
+    return '<div class="card sys"><div class="si">'+icons[i%icons.length]+'</div><div><div class="st">'+esc(s.nom)+'</div><div class="sd">'+esc(s.desc)+'</div><div class="freq">'+esc(s.freq)+'</div></div></div>';
+  }).join("");
+  document.getElementById("kos-closing").innerHTML='<div class="cl">Argument massue</div><p>'+esc(K.closing)+'</p>';
+})();
+
+/* ---------- render: équipe ---------- */
+(function(){
+  var E=window.EQUIPE||{};
+  document.getElementById("eq-vision").innerHTML='<b>Vision 12 mois —</b> '+esc(E.vision);
+  document.getElementById("eq-membres").innerHTML=(E.membres||[]).map(function(m){
+    var fait=(m.fait||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join("");
+    var pas=(m.pasfait||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join("");
+    var h='<div class="card"><h3>'+esc(m.nom)+'</h3><div class="tag" style="margin:6px 0 10px">'+esc(m.role)+'</div>';
+    h+='<div class="dsec" style="margin-top:6px"><h4>Fait</h4><ul class="ulist pos">'+fait+'</ul></div>';
+    if(pas) h+='<div class="dsec"><h4>Ne fait pas</h4><ul class="ulist neg">'+pas+'</ul></div>';
+    h+='</div>';return h;
+  }).join("");
+})();
+
+/* ---------- render: roadmap ---------- */
+(function(){
+  document.getElementById("roadmap-body").innerHTML=(window.ROADMAP||[]).map(function(r){
+    var pc=r.p==="P1"?"pr-p1":r.p==="P2"?"pr-p2":"pr-p3";
+    return '<li><span class="badge '+pc+' pr">'+esc(r.p)+'</span><div class="tlc"><div class="tt">'+esc(r.t)+'</div><div class="tn">'+esc(r.note)+'</div></div></li>';
+  }).join("");
+})();
+
+/* ---------- render: sources ---------- */
+(function(){
+  document.getElementById("sources-body").innerHTML=(window.SOURCES||[]).map(function(s){
+    var link=s.u?'<a href="'+esc(s.u)+'" target="_blank" rel="noopener">'+esc(s.u.replace(/^https?:\/\//,""))+' ↗</a>':'<span class="muted">interne</span>';
+    return '<div class="srow"><div>'+esc(s.n)+'<div class="muted" style="font-size:11.5px">consulté le '+esc(s.d)+'</div></div>'+link+'</div>';
+  }).join("");
+})();
+
+/* ---------- boot ---------- */
+go(location.hash.slice(1)||"accueil");
+</script>
+</body>
+</html>
