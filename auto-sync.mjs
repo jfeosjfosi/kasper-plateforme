@@ -10,7 +10,7 @@ import { promisify } from "node:util";
 
 const run = promisify(execFile);
 const ROOT = new URL(".", import.meta.url).pathname;
-const IGNORE = [".git", "skills-lab", "node_modules", ".DS_Store", ".wrangler"];
+const IGNORE = [".git", "skills-lab", "node_modules", ".DS_Store", ".wrangler", "auto-sync.log"];
 let timer = null;
 let busy = false;
 let again = false;
